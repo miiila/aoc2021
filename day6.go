@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	f, _ := os.Open("day6_input")
+  f, _ := os.Open("day6_input")
+	//f, _ := os.Open("day6_input_test")
 	defer f.Close()
 	s := bufio.NewScanner(f)
 	inputs := make([]int, 0)
@@ -49,10 +50,23 @@ func main() {
 		for i := 1; i < 257-v; {
 			days[v+i]++
 			i = i + v
-			v = 6
+			v = 7
 		}
 	}
-	fmt.Println(days)
-	res = len(currentGen)
-	fmt.Println(res)
+  for i:=1; i < 257;i++ {
+    p := days[i]
+    if p > 0 {
+      for j:=i+9; j < 257; {
+        days[j] = days[j]+p
+        j = j+7
+      }
+    }
+  }
+  for i := 0; i <256; i++ {
+    days[i+1] = days[i+1] + days[i]
+  }
+  if days[80] != res {
+    panic("Wrong")
+  }
+  println(days[256])
 }
