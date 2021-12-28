@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	//"strconv"
-	//"math"
+	"math"
 	//"sort"
 )
 
@@ -95,7 +95,7 @@ func computeScanners(s1 scannerT, s2 scannerT) (map[coord]int, int) {
 
 func main() {
 	f, _ := os.Open("day19_input")
-	f, _ = os.Open("day19_input_test")
+	//f, _ = os.Open("day19_input_test")
 	defer f.Close()
 	s := bufio.NewScanner(f)
 	inputs := make([]scannerT, 0)
@@ -120,61 +120,59 @@ func main() {
 		scanner = append(scanner, c)
 	}
 	inputs = append(inputs, scanner)
+	fmt.Println(len(inputs))
 
 	// Part1
 	res := 0
-	//c := coord{1, 2, 3}
+	todo := make([]scannerT, 0)
+	todo = append(todo, inputs[0])
 	//fmt.Println(inputs)
-	//for si := 0; si < len(inputs)-1; si++ {
-	//for sj := si + 1; sj < len(inputs); sj++ {
-	//r, ti := computeScanners(inputs[si], inputs[sj])
-	////fmt.Println(len(r))
-	//for i, v := range r {
-	//if v == 12 {
-	//f := inputs[sj][0]
-	//fmt.Println("Inputs[sj][0]", sj, f)
-	//fmt.Println(applySymmetry(ti, f.x, f.y, f.z))
-	////for b := 0; b < len(inputs[sj]); b++ {
-	////bc := inputs[sj][b]
-	////bx, by, bz := applySymmetry(ti, bc.x, bc.y, bc.z)
-	////fmt.Println(bc, bx, by, bz)
-	////inputs[sj][b] = coord{bx, by, bz}
-	////}
-	//fmt.Println(i, v, si, sj, ti)
-	//}
-	//}
-	//}
-	//}
-	r, ti := computeScanners(inputs[0], inputs[1])
-	for i, v := range r {
-		if v == 12 {
-			//f := inputs[sj][0]
-			//fmt.Println("Inputs[sj][0]", sj, f)
-			//fmt.Println(applySymmetry(ti, f.x, f.y, f.z))
-			fmt.Println(i, v, ti)
+	var scanners [35]coord
+	done := make(map[int]bool)
+	done[0] = true
+	resMap := make(map[coord]bool)
+	for len(todo) > 0 {
+		newTodo := make([]scannerT, 0)
+		for _, v := range todo {
+			for _, c := range v {
+				resMap[c] = true
+			}
+			for ii, input := range inputs {
+				if done[ii] {
+					continue
+				}
+				r, ti := computeScanners(v, input)
+				for i, v := range r {
+					if v >= 12 {
+						for b := 0; b < len(input); b++ {
+							bc := input[b]
+							bx, by, bz := applySymmetry(ti, bc.x, bc.y, bc.z)
+							input[b] = coord{bx + i.x, by + i.y, bz + i.z}
+							scanners[ii] = i
+							resMap[input[b]] = true
+						}
+						newTodo = append(newTodo, input)
+						done[ii] = true
+					}
+				}
+			}
 		}
+		todo = newTodo
 	}
-	for b := 0; b < len(inputs[1]); b++ {
-		bc := inputs[1][b]
-		bx, by, bz := applySymmetry(ti, bc.x, bc.y, bc.z)
-		//fmt.Println(bc, bx, by, bz)
-		inputs[1][b] = coord{bx, by, bz}
-	}
-	r, ti = computeScanners(inputs[1], inputs[4])
-	for i, v := range r {
-		if v == 12 {
-			//f := inputs[sj][0]
-			//fmt.Println("Inputs[sj][0]", sj, f)
-			//fmt.Println(applySymmetry(ti, f.x, f.y, f.z))
-			fmt.Println(i, v, ti)
-		}
-	}
-
-	fmt.Println(applyAllSymmetries(coord{1, 2, 3}))
-
+	res = len(resMap)
 	fmt.Println(res)
 
 	// Part2
 	res = 0
+	max := float64(0)
+	for i, s := range scanners {
+		for _, ss := range scanners[i+1:] {
+			x := s.x - ss.x
+			y := s.y - ss.y
+			z := s.z - ss.z
+			max = math.Max(max, (math.Abs(float64(x)) + math.Abs(float64(y)) + math.Abs(float64(z))))
+		}
+	}
+	res = int(max)
 	fmt.Println(res)
 }
